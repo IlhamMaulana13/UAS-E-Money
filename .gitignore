@@ -1,0 +1,47 @@
+# macOS
+.DS_Store
+.DS_Store?
+._*
+__MACOSX/
+
+# Flutter / Dart
+**/build/
+**/.dart_tool/
+**/.packages
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/*.dill
+**/dart_plugin_registrant.dart
+
+# Android
+**/android/.gradle/
+**/android/local.properties
+**/android/GeneratedPluginRegistrant.java
+**/android/key.properties
+**/*.keystore
+**/*.jks
+
+# iOS
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Pods/
+**/ios/.packages
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Go
+backend/*.exe
+backend/tmp/
+
+# Environment / secrets
+.env
+*.env
+firebase_service_account.json
+
+# Logs
+*.log

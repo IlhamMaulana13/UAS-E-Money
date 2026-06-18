@@ -1,0 +1,373 @@
+{
+  "info": {
+    "name": "E-Money 2FA Backend",
+    "description": "Backend E-money dengan 2FA (Firebase OTP, Email OTP, TOTP Google Authenticator)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "emoney-2fa-collection"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/v1/health",
+            "description": "Cek status server"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Verify Firebase Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.success && json.data && json.data.access_token) {",
+                  "    pm.collectionVariables.set('jwt_token', json.data.access_token);",
+                  "    console.log('JWT Token disimpan:', json.data.access_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/auth/verify-token",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firebase_token\": \"YOUR_FIREBASE_ID_TOKEN_HERE\"\n}"
+            },
+            "description": "Verifikasi Firebase ID Token dan dapatkan Backend JWT"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profile (Me)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/v1/auth/me",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Ambil profil user yang sedang login"
+          },
+          "response": []
+        },
+        {
+          "name": "Update FCM Token",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/v1/auth/fcm-token",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fcm_token\": \"FCM_DEVICE_TOKEN_DARI_FLUTTER\"\n}"
+            },
+            "description": "Update FCM device token untuk notifikasi Firebase"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "OTP - Firebase Notification",
+      "item": [
+        {
+          "name": "Send OTP via Firebase",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/otp/send-firebase",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Kirim OTP via Firebase Cloud Messaging push notification ke device user"
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm OTP (Firebase)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/otp/confirm",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"123456\",\n  \"otp_type\": \"firebase\"\n}"
+            },
+            "description": "Konfirmasi kode OTP yang diterima via Firebase notification"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "OTP - Email",
+      "item": [
+        {
+          "name": "Send OTP via Email",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/otp/send-email",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Kirim OTP via email ke alamat email user"
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm OTP (Email)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/otp/confirm",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"123456\",\n  \"otp_type\": \"email\"\n}"
+            },
+            "description": "Konfirmasi kode OTP yang diterima via email"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "OTP - TOTP (Google Authenticator)",
+      "item": [
+        {
+          "name": "Register TOTP",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/otp/totp/register",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Daftarkan TOTP - mendapatkan secret key dan QR code untuk di-scan dengan Google Authenticator"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify TOTP",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/otp/totp/verify",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"123456\"\n}"
+            },
+            "description": "Verifikasi kode TOTP dari Google Authenticator (juga mengaktifkan TOTP jika baru pertama kali)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Account",
+      "item": [
+        {
+          "name": "Get Account",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/v1/account",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Lihat saldo akun"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Transaction History",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/v1/account/transactions",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Lihat riwayat transaksi (20 terakhir)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Payment",
+      "item": [
+        {
+          "name": "Top Up Saldo",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/payment/topup",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100000\n}"
+            },
+            "description": "Top up saldo (untuk testing, tanpa OTP)"
+          },
+          "response": []
+        },
+        {
+          "name": "Transfer dengan OTP Firebase",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/payment/transfer",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 50000,\n  \"description\": \"Bayar makan siang\",\n  \"otp_code\": \"123456\",\n  \"otp_type\": \"firebase\"\n}"
+            },
+            "description": "Transfer/pembayaran dengan verifikasi OTP Firebase"
+          },
+          "response": []
+        },
+        {
+          "name": "Transfer dengan OTP Email",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/payment/transfer",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 50000,\n  \"description\": \"Bayar tagihan listrik\",\n  \"otp_code\": \"123456\",\n  \"otp_type\": \"email\"\n}"
+            },
+            "description": "Transfer/pembayaran dengan verifikasi OTP Email"
+          },
+          "response": []
+        },
+        {
+          "name": "Transfer dengan TOTP Google Authenticator",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/payment/transfer",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 75000,\n  \"description\": \"Beli pulsa\",\n  \"otp_code\": \"123456\",\n  \"otp_type\": \"totp\"\n}"
+            },
+            "description": "Transfer/pembayaran dengan verifikasi TOTP dari Google Authenticator"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
